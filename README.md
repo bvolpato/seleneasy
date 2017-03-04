@@ -6,7 +6,7 @@ seleneasy
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.brunocvcunha.seleneasy/seleneasy/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.brunocvcunha.seleneasy/seleneasy)
 [![Coverage Status](https://coveralls.io/repos/github/brunocvcunha/seleneasy/badge.svg?branch=master)](https://coveralls.io/github/brunocvcunha/seleneasy?branch=master)
 
-:nut_and_bolt: seleneasy.
+:stars: seleneasy - Selenium made easy.
 
 
 Download
