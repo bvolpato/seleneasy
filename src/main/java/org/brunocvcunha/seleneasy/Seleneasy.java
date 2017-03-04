@@ -22,17 +22,19 @@ import org.apache.commons.io.FileUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.remote.RemoteWebDriver;
-import org.openqa.selenium.safari.SafariDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j;
 
@@ -45,10 +47,11 @@ import lombok.extern.log4j.Log4j;
 @Log4j
 @Getter
 @Setter
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class Seleneasy {
 
-    private RemoteWebDriver driver;
+    @NonNull
+    private WebDriver driver;
 
     private int defaultWaitInSeconds = 10;
     
@@ -64,7 +67,7 @@ public class Seleneasy {
      */
     public void setup() {
         if (driver == null) {
-            driver = new SafariDriver();
+            driver = new FirefoxDriver();
 
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 driver.quit();
@@ -151,7 +154,7 @@ public class Seleneasy {
      * @return Script result
      */
     public Object executeJavaScript(String script) {
-        return driver.executeScript(script);
+        return ((JavascriptExecutor) driver).executeScript(script);
     }
 
     /**

@@ -15,13 +15,17 @@
  */
 package org.brunocvcunha.seleneasy;
 
-import static org.junit.Assert.*;
-
-import java.util.concurrent.TimeUnit;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.jsoup.nodes.Document;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.safari.SafariDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
 /**
@@ -32,21 +36,35 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
  */
 public class SeleneasyTest {
 
+    private WebDriver driver;
+
+    @Before
+    public void setup() {
+        driver = new FirefoxDriver();
+    }
+
+    @After
+    public void tearDown() {
+        driver.close();
+        driver.quit();
+    }
+
     @Test
     public void testSimple() throws Exception {
-        Seleneasy seleneasy = new Seleneasy();
+
+        Seleneasy seleneasy = new Seleneasy(driver);
         seleneasy.setDefaultWaitInSeconds(5);
-        
+
         Document document = seleneasy.getDocument("https://github.com/brunocvcunha");
         assertEquals("Bruno Candido Volpato da Cunha", document.select("span.vcard-fullname").text());
-        
+
         seleneasy.waitClickable(By.cssSelector("a[href='/brunocvcunha?tab=stars']"), true);
         seleneasy.waitClickable(By.cssSelector("a[rel='next']"), true);
-        
+
         Boolean onRightPage = seleneasy.waitForCondition(ExpectedConditions.urlContains("page=2"));
         assertTrue(onRightPage);
         assertEquals("https://github.com/brunocvcunha?page=2&tab=stars", seleneasy.getUrl());
-        
+
     }
 
 }
