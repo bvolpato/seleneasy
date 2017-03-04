@@ -15,8 +15,25 @@
  */
 package org.brunocvcunha.seleneasy;
 
-public class App {
-    
-    //TODO: build app!
+import static org.junit.Assert.assertEquals;
+
+import org.jsoup.nodes.Document;
+import org.junit.Test;
+
+/**
+ * Seleneasy Tests
+ * 
+ * @author Bruno Candido Volpato da Cunha
+ *
+ */
+public class SeleneasyTest {
+
+    @Test
+    public void testSimple() {
+        Seleneasy seleneasy = new Seleneasy();
+        Document document = seleneasy.getDocument("https://github.com/brunocvcunha");
+
+        assertEquals("Bruno Candido Volpato da Cunha", document.select("span.vcard-fullname").text());
+    }
 
 }
