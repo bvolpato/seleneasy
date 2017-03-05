@@ -70,7 +70,11 @@ public class Seleneasy {
             driver = new FirefoxDriver();
 
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                driver.quit();
+                try {
+                    driver.quit();
+                } catch (Exception e) {
+                    //it's ok.
+                }
             }));
         }
     }
@@ -97,6 +101,15 @@ public class Seleneasy {
         log.info("Getting DOM of URL: [" + url + "]");
 
         open(url);
+        return driver.getPageSource();
+    }
+    
+    /**
+     * Gets the DOM of the current page
+     * 
+     * @return DOM
+     */
+    public String getPageSource() {
         return driver.getPageSource();
     }
 
@@ -157,6 +170,13 @@ public class Seleneasy {
         return ((JavascriptExecutor) driver).executeScript(script);
     }
 
+    /**
+     * Scroll to top of the page
+     */
+    public void scrollToTop() {
+        executeJavaScript("window.scrollTo(0, 0);return true");
+    }
+    
     /**
      * Scroll to bottom of the page
      */
