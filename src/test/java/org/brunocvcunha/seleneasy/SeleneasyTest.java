@@ -18,11 +18,14 @@ package org.brunocvcunha.seleneasy;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+
 import org.jsoup.nodes.Document;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.safari.SafariDriver;
@@ -54,9 +57,10 @@ public class SeleneasyTest {
 
         Seleneasy seleneasy = new Seleneasy(driver);
         seleneasy.setDefaultWaitInSeconds(5);
+        seleneasy.loadCookies(new File("/tmp/cookies.txt"));
 
         Document document = seleneasy.getDocument("https://github.com/brunocvcunha");
-        assertEquals("Bruno Candido Volpato da Cunha", document.select("span.vcard-fullname").text());
+        assertEquals("Bruno Volpato", document.select("span.vcard-fullname").text());
 
         seleneasy.waitClickable(By.cssSelector("a[href='/brunocvcunha?tab=stars']"), true);
         seleneasy.waitClickable(By.cssSelector("a[rel='next']"), true);

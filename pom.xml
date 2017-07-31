@@ -212,7 +212,14 @@
 			<artifactId>selenium-server</artifactId>
 			<version>2.53.1</version>
 		</dependency>
-	
+		<dependency>
+			<groupId>org.seleniumhq.selenium</groupId>
+			<artifactId>selenium-firefox-driver</artifactId>
+			<version>2.53.1</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/lib/selenium-firefox-driver-2.53.1-seleneasy.jar</systemPath>
+		</dependency>
+
 		<!-- Jsoup -->
 		<dependency>
 			<groupId>org.jsoup</groupId>

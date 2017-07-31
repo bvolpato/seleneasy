@@ -16,12 +16,19 @@
 package org.brunocvcunha.seleneasy;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Cookie;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
@@ -251,6 +258,40 @@ public class Seleneasy {
     }
     
     /**
+     * Save the cookies to a file
+     * @param file File to save
+     * @throws IOException 
+     * @throws FileNotFoundException 
+     */
+    public void saveCookies(File file) throws FileNotFoundException, IOException {
+        ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file));
+        oos.writeObject(driver.manage().getCookies());
+        oos.close();
+    }
+    
+    /**
+     * Load the cookies from a file
+     * @param file File to read
+     * @throws IOException 
+     * @throws FileNotFoundException 
+     * @throws ClassNotFoundException 
+     */
+    public void loadCookies(File file) throws FileNotFoundException, IOException, ClassNotFoundException {
+        if (!file.exists()) {
+            return;
+        }
+        
+        ObjectInputStream ios = new ObjectInputStream(new FileInputStream(file));
+        Set<Cookie> cookies = (Set<Cookie>) ios.readObject();
+        ios.close();
+        
+        for (Cookie cookie : cookies) {
+            log.info("Loading cookie: " + cookie.toString());
+            driver.manage().addCookie(cookie);
+        }
+    }
+
+    /**
      * Wait for element to be visible, click if param says so and return it
      * 
      * @param by
@@ -291,5 +332,22 @@ public class Seleneasy {
     public String getUrl() {
         return driver.getCurrentUrl();
     }
+    
+    /**
+     * @return screenshot
+     */
+    public File getScreenshot() {
+        File screenshotFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+        return screenshotFile;
+    }
+    
+    /**
+     * @return screenshot
+     */
+    public byte[] getScreenshotBytes() {
+        byte[] screenshotFile = ((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES);
+        return screenshotFile;
+    }
+
     
 }
