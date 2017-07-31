@@ -29,6 +29,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Cookie;
+import org.openqa.selenium.InvalidCookieDomainException;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
@@ -277,6 +278,19 @@ public class Seleneasy {
      * @throws ClassNotFoundException 
      */
     public void loadCookies(File file) throws FileNotFoundException, IOException, ClassNotFoundException {
+        this.loadCookies(file, null);
+    }
+    
+    
+    /**
+     * Load the cookies from a file
+     * @param file File to read
+     * @param domain Domain to import cookies
+     * @throws IOException 
+     * @throws FileNotFoundException 
+     * @throws ClassNotFoundException 
+     */
+    public void loadCookies(File file, String domain) throws FileNotFoundException, IOException, ClassNotFoundException {
         if (!file.exists()) {
             return;
         }
@@ -287,7 +301,23 @@ public class Seleneasy {
         
         for (Cookie cookie : cookies) {
             log.info("Loading cookie: " + cookie.toString());
-            driver.manage().addCookie(cookie);
+            
+            try {
+                driver.manage().addCookie(cookie);
+            } catch (InvalidCookieDomainException e) {
+                
+                if (domain != null) {
+                    
+                    if (cookie.getDomain().startsWith(".") && domain.indexOf(cookie.getDomain()) != -1) {
+                        Cookie cookie2 = new Cookie(cookie.getDomain(), cookie.getValue(), domain, cookie.getPath(), cookie.getExpiry(), cookie.isSecure(), cookie.isHttpOnly());
+                        driver.manage().addCookie(cookie2);
+                    }
+                    
+                } else {
+                    e.printStackTrace();
+                }
+
+            }
         }
     }
 
