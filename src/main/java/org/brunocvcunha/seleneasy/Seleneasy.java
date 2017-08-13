@@ -306,6 +306,7 @@ public class Seleneasy {
                 driver.manage().addCookie(cookie);
             } catch (InvalidCookieDomainException e) {
                 
+                e.printStackTrace();
                 if (domain != null) {
                     
                     if (cookie.getDomain().startsWith(".") && domain.indexOf(cookie.getDomain()) != -1) {
