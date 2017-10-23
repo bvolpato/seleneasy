@@ -22,20 +22,28 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
+import org.brunocvcunha.inutils4j.MyArrUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Cookie;
 import org.openqa.selenium.InvalidCookieDomainException;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.interactions.MoveTargetOutOfBoundsException;
+import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -67,15 +75,24 @@ public class Seleneasy {
      * Constructor without specifying the driver, will use a default one
      */
     public Seleneasy() {
-        setup();
+        this((DesiredCapabilities) null);
     }
-
+    
+    /**
+     * Constructor without specifying the driver, will use a default one
+     * @param capabilities Desired Capabilities
+     */
+    public Seleneasy(DesiredCapabilities capabilities) {
+        setup(capabilities);
+    }
+    
     /**
      * Sets up the driver
+     * @param capabilities Desired capabilities
      */
-    public void setup() {
+    public void setup(DesiredCapabilities capabilities) {
         if (driver == null) {
-            driver = new FirefoxDriver();
+            driver = new FirefoxDriver(capabilities);
 
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 try {
@@ -87,6 +104,40 @@ public class Seleneasy {
         }
     }
 
+    /**
+     * Navigates the browser to the specified URL
+     * 
+     * @param url
+     *            URL to navigate
+     */
+    public void openWithTimeout(String url, long timeout) {
+        log.info("Navigating to [" + url + "] with timeout of [" + timeout + "ms]");
+
+        Thread thread = new Thread(new Runnable() {
+            public void run() {
+                try {
+                    driver.get(Thread.currentThread().getName());
+                } catch (Exception e) {
+                    //throw new RuntimeException(e);
+                }
+            }
+        }, url);
+        thread.start();
+        
+        try {
+            thread.join(timeout);
+        } catch (InterruptedException e) {
+            // ignore
+        }
+        
+        if (thread.isAlive()) {
+            // Thread still alive, we need to abort
+            log.warn("Timeout on loading page " + url);
+            thread.interrupt();
+        }
+
+    }
+    
     /**
      * Navigates the browser to the specified URL
      * 
@@ -259,14 +310,91 @@ public class Seleneasy {
     }
     
     /**
+     * Positionate in an element naturally (scrolling and clicking)
+     * @param webElement Element
+     * @return Element
+     * @throws Exception
+     */
+    public WebElement positionateAndClick(WebElement element) throws Exception {
+        Actions mouseActions = new Actions(driver);
+        try {
+            mouseActions.moveToElement(element).build().perform();
+            mouseActions.click(element).build().perform();
+        } catch (Exception e) {
+            //not moveable
+            element.click();
+        }
+        
+        return element;
+    }
+
+    
+    /**
+     * Positionate in an element naturally (scrolling and clicking)
+     * @param by Selector
+     * @return Element
+     * @throws Exception
+     */
+    public WebElement positionateAndClick(By by) throws Exception {
+        return positionateAndClick(waitForCondition(ExpectedConditions.visibilityOfElementLocated(by)));
+    }
+    
+    /**
+     * Find first match
+     * @param by Selector
+     * @return First element found
+     */
+    public WebElement findFirst(By... by) {
+        for (By selector : by) {
+            List<WebElement> elements = driver.findElements(selector);
+            if (!elements.isEmpty()) {
+                return elements.get(0);
+            }
+        }
+        
+        return null;
+    }
+    
+    public void esc() {
+        try {
+            driver.findElement(By.tagName("body")).sendKeys(Keys.ESCAPE);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    /**
      * Save the cookies to a file
      * @param file File to save
      * @throws IOException 
      * @throws FileNotFoundException 
+     * @throws ClassNotFoundException 
      */
-    public void saveCookies(File file) throws FileNotFoundException, IOException {
+    public void saveCookies(File file) throws FileNotFoundException, IOException, ClassNotFoundException {
+        this.saveCookies(file, true);
+    }
+    
+    /**
+     * Save the cookies to a file
+     * @param file File to save
+     * @param append Append to the previous cookies in the file
+     * @throws IOException 
+     * @throws FileNotFoundException 
+     * @throws ClassNotFoundException 
+     */
+    public void saveCookies(File file, boolean append) throws FileNotFoundException, IOException, ClassNotFoundException {
+        log.info("Saving cookies: " + file.getAbsolutePath());
+
+        Set<Cookie> cookiesToSave;
+        if (append) {
+            cookiesToSave = getCookies(file);
+            cookiesToSave.addAll(driver.manage().getCookies());
+        } else {
+            cookiesToSave = driver.manage().getCookies();
+        }
+        
         ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file));
-        oos.writeObject(driver.manage().getCookies());
+        oos.writeObject(cookiesToSave);
         oos.close();
     }
     
@@ -291,19 +419,15 @@ public class Seleneasy {
      * @throws ClassNotFoundException 
      */
     public void loadCookies(File file, String domain) throws FileNotFoundException, IOException, ClassNotFoundException {
-        if (!file.exists()) {
-            return;
-        }
-        
-        ObjectInputStream ios = new ObjectInputStream(new FileInputStream(file));
-        Set<Cookie> cookies = (Set<Cookie>) ios.readObject();
-        ios.close();
+        Set<Cookie> cookies = getCookies(file);
         
         for (Cookie cookie : cookies) {
             log.info("Loading cookie: " + cookie.toString());
             
             try {
                 driver.manage().addCookie(cookie);
+            } catch (IllegalArgumentException e) {
+                //invalid cookie.
             } catch (InvalidCookieDomainException e) {
                 
                 e.printStackTrace();
@@ -320,6 +444,17 @@ public class Seleneasy {
 
             }
         }
+    }
+
+    private Set<Cookie> getCookies(File file) throws IOException, FileNotFoundException, ClassNotFoundException {
+        if (!file.exists()) {
+            return new LinkedHashSet<>();
+        }
+        
+        ObjectInputStream ios = new ObjectInputStream(new FileInputStream(file));
+        Set<Cookie> cookies = (Set<Cookie>) ios.readObject();
+        ios.close();
+        return new LinkedHashSet<>(cookies);
     }
 
     /**
@@ -346,6 +481,25 @@ public class Seleneasy {
         return element;
     }
 
+    /**
+     * Send keys with delay
+     * @param element Element to send
+     * @param message Message to put
+     * @param delay Delay in ms
+     */
+    public void sendKeysDelay(WebElement element, String message, long delay) {
+        
+        for (char c : message.toCharArray()) {
+            element.sendKeys(String.valueOf(c));
+            try {
+                TimeUnit.MILLISECONDS.sleep(delay);
+            } catch (InterruptedException e) {
+                //its ok
+            }
+        }
+        
+    }
+    
     /**
      * Shuts down the driver
      */
