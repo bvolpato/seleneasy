@@ -422,27 +422,31 @@ public class Seleneasy {
         Set<Cookie> cookies = getCookies(file);
         
         for (Cookie cookie : cookies) {
-            log.info("Loading cookie: " + cookie.toString());
-            
-            try {
-                driver.manage().addCookie(cookie);
-            } catch (IllegalArgumentException e) {
-                //invalid cookie.
-            } catch (InvalidCookieDomainException e) {
-                
-                e.printStackTrace();
-                if (domain != null) {
-                    
-                    if (cookie.getDomain().startsWith(".") && domain.indexOf(cookie.getDomain()) != -1) {
-                        Cookie cookie2 = new Cookie(cookie.getDomain(), cookie.getValue(), domain, cookie.getPath(), cookie.getExpiry(), cookie.isSecure(), cookie.isHttpOnly());
-                        driver.manage().addCookie(cookie2);
-                    }
-                    
-                } else {
-                    e.printStackTrace();
-                }
+            addCookie(domain, cookie);
+        }
+    }
 
+    public void addCookie(String domain, Cookie cookie) {
+        log.info("Loading cookie: " + cookie.toString());
+        
+        try {
+            driver.manage().addCookie(cookie);
+        } catch (IllegalArgumentException e) {
+            //invalid cookie.
+        } catch (InvalidCookieDomainException e) {
+            
+            e.printStackTrace();
+            if (domain != null) {
+                
+                if (cookie.getDomain().startsWith(".") && domain.indexOf(cookie.getDomain()) != -1) {
+                    Cookie cookie2 = new Cookie(cookie.getDomain(), cookie.getValue(), domain, cookie.getPath(), cookie.getExpiry(), cookie.isSecure(), cookie.isHttpOnly());
+                    driver.manage().addCookie(cookie2);
+                }
+                
+            } else {
+                e.printStackTrace();
             }
+
         }
     }
 
