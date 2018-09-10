@@ -63,11 +63,10 @@ public class SeleneasyTest {
         assertEquals("Bruno Volpato", document.select("span.vcard-fullname").text());
 
         seleneasy.waitClickable(By.cssSelector("a[href='/brunocvcunha?tab=stars']"), true);
-        seleneasy.waitClickable(By.cssSelector("a[rel='next']"), true);
 
-        Boolean onRightPage = seleneasy.waitForCondition(ExpectedConditions.urlContains("page=2"));
+        Boolean onRightPage = seleneasy.waitForCondition(ExpectedConditions.urlContains("tab=stars"));
         assertTrue(onRightPage);
-        assertEquals("https://github.com/brunocvcunha?page=2&tab=stars", seleneasy.getUrl());
+        assertEquals("https://github.com/brunocvcunha?tab=stars", seleneasy.getUrl());
 
     }
 
