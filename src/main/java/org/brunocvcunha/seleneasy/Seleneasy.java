@@ -48,6 +48,7 @@ import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -69,39 +70,36 @@ public class Seleneasy {
     @NonNull
     private WebDriver driver;
 
+    private DesiredCapabilities capabilities;
+    
     private int defaultWaitInSeconds = 10;
     
     /**
-     * Constructor without specifying the driver, will use a default one
+     * Constructor with all potions
      */
-    public Seleneasy() {
-        this((DesiredCapabilities) null);
-    }
-    
-    /**
-     * Constructor without specifying the driver, will use a default one
-     * @param capabilities Desired Capabilities
-     */
-    public Seleneasy(DesiredCapabilities capabilities) {
-        setup(capabilities);
+    @Builder
+    public Seleneasy(WebDriver driver, DesiredCapabilities capabilities, int defaultWaitInSeconds) {
+        this.driver = driver;
+        this.capabilities = capabilities;
+        this.defaultWaitInSeconds = defaultWaitInSeconds;
     }
     
     /**
      * Sets up the driver
      * @param capabilities Desired capabilities
      */
-    public void setup(DesiredCapabilities capabilities) {
+    public void setup() {
         if (driver == null) {
             driver = new FirefoxDriver(capabilities);
-
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                try {
-                    driver.quit();
-                } catch (Exception e) {
-                    //it's ok.
-                }
-            }));
         }
+        
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                driver.quit();
+            } catch (Exception e) {
+                //it's ok.
+            }
+        }));
     }
 
     /**
