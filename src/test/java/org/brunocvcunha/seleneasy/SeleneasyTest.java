@@ -41,18 +41,18 @@ public class SeleneasyTest {
 
     private WebDriver driver;
 
-    @Before
+    //@Before
     public void setup() {
         driver = new FirefoxDriver();
     }
 
-    @After
+    //@After
     public void tearDown() {
         driver.close();
         driver.quit();
     }
 
-    @Test
+    //@Test
     public void testSimple() throws Exception {
 
         Seleneasy seleneasy = new Seleneasy(driver);
