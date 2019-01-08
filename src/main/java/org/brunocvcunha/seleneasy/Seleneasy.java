@@ -86,7 +86,6 @@ public class Seleneasy {
     
     /**
      * Sets up the driver
-     * @param capabilities Desired capabilities
      */
     public void setup() {
         if (driver == null) {
@@ -309,7 +308,7 @@ public class Seleneasy {
     
     /**
      * Positionate in an element naturally (scrolling and clicking)
-     * @param webElement Element
+     * @param element Element
      * @return Element
      * @throws Exception
      */

@@ -23,6 +23,7 @@ import java.io.File;
 import org.jsoup.nodes.Document;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
@@ -37,22 +38,23 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
  * @author Bruno Candido Volpato da Cunha
  *
  */
+@Ignore
 public class SeleneasyTest {
 
     private WebDriver driver;
 
-    //@Before
+    @Before
     public void setup() {
         driver = new FirefoxDriver();
     }
 
-    //@After
+    @After
     public void tearDown() {
         driver.close();
         driver.quit();
     }
 
-    //@Test
+    @Test
     public void testSimple() throws Exception {
 
         Seleneasy seleneasy = new Seleneasy(driver);
